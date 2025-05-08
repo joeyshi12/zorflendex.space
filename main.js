@@ -184,7 +184,6 @@ class Pokemon {
             this.move();
         } else {
             this.sprite.play("Idle");
-            this.sprite.setRow(0);
             this.actionTimer = 0;
             this.actionDuration = this.sprite.currentAnimation.durations.reduce((duration, acc) => acc + duration, 0);
         }
