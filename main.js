@@ -364,6 +364,8 @@ document.addEventListener("DOMContentLoaded", () => {
 async function main() {
     const pokemonNames = ["Gengar", "Misdreavus", "Litwick"];
     const animDataList = await Promise.all(pokemonNames.map(name => loadAnimation(name)));
+
+    /** @type {Pokemon} */
     let selectedPokemon;
 
     /** @type {Pokemon[]} */
@@ -385,6 +387,7 @@ async function main() {
         const col = Math.floor(x / (CELL_LENGTH * SCALE));
         const pokemon = entities.find(pokemon => pokemon.row === row && pokemon.col === col);
         if (pokemon) {
+            canvas.style.cursor = "pointer";
             selectedPokemon = pokemon;
             selectedPokemon.pickUp();
             selectedPokemon.position.x = x / SCALE;
@@ -404,15 +407,11 @@ async function main() {
         }
     }
 
-    /**
-     * Sets selected pokemon down
-     * @param {number} x 
-     * @param {number} y
-     */
-    function setDown(x, y) {
+    function setDown() {
+        canvas.style.cursor = "default";
         if (selectedPokemon) {
-            const row = Math.round(y / (CELL_LENGTH * SCALE));
-            const col = Math.round(x / (CELL_LENGTH * SCALE));
+            const row = Math.round(selectedPokemon.position.y / CELL_LENGTH - 0.5);
+            const col = Math.round(selectedPokemon.position.x / CELL_LENGTH - 0.5);
             selectedPokemon.place(row, col);
             selectedPokemon = undefined;
         }
@@ -430,24 +429,24 @@ async function main() {
         movePokemon(event.clientX, event.clientY);
     });
 
-    canvas.addEventListener("touchmove", (event) => {
-        movePokemon(event.touches[0].clientX, event.touches[0].clientY);
+    canvas.addEventListener("touchmove", () => {
+        movePokemon();
     });
 
-    canvas.addEventListener("mouseup", (event) => {
-        setDown(event.clientX, event.clientY);
+    canvas.addEventListener("mouseup", () => {
+        setDown();
     });
 
-    canvas.addEventListener("mouseleave", (event) => {
-        setDown(event.clientX, event.clientY);
+    canvas.addEventListener("mouseleave", () => {
+        setDown();
     });
 
-    canvas.addEventListener("touchend", (event) => {
-        setDown(event.touches[0].clientX, event.touches[0].clientY);
+    canvas.addEventListener("touchend", () => {
+        setDown();
     });
 
-    canvas.addEventListener("touchcancel", (event) => {
-        setDown(event.touches[0].clientX, event.touches[0].clientY);
+    canvas.addEventListener("touchcancel", () => {
+        setDown();
     });
 
     function update() {
@@ -462,6 +461,17 @@ async function main() {
 
         // Render
         context.clearRect(0, 0, canvas.width, canvas.height);
+        if (selectedPokemon) {
+            const row = Math.round(selectedPokemon.position.y / CELL_LENGTH - 0.5);
+            const col = Math.round(selectedPokemon.position.x / CELL_LENGTH - 0.5);
+            context.fillStyle = "rgba(0, 255, 0, 0.4)";
+            context.fillRect(
+                col * CELL_LENGTH,
+                row * CELL_LENGTH,
+                CELL_LENGTH,
+                CELL_LENGTH
+            );
+        }
         drawGrid();
         for (let entity of entities) {
             entity.render();
