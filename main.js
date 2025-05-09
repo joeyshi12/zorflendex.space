@@ -1,5 +1,7 @@
 const SCALE = 3;
 const CELL_LENGTH = 22;
+const MOVE_DIRECTIONS = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]];
+
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
 let maxRows = 10;
@@ -179,8 +181,18 @@ class Pokemon {
         this.prevPosition = undefined;
 
         if (Math.random() < 0.5) {
-            this.moveRepeats = Math.floor(1 + Math.random() * 2);
-            this.directionIndex = Math.floor(Math.random() * 8);
+            this.moveRepeats = 1 + Math.floor(Math.random() * 2); // 1 to 3 repeats
+            if (this.row <= 1) {
+                this.directionIndex = 0;
+            } else if (this.col <= 1) {
+                this.directionIndex = 2;
+            } else if (this.row >= maxRows - 1) {
+                this.directionIndex = 4;
+            } else if (this.col >= maxCols - 1) {
+                this.directionIndex = 6;
+            } else {
+                this.directionIndex = Math.floor(Math.random() * MOVE_DIRECTIONS.length);
+            }
             this.move();
         } else {
             this.sprite.play("Idle");
@@ -196,7 +208,7 @@ class Pokemon {
         this.actionDuration = this.sprite.currentAnimation.durations.reduce((duration, acc) => acc + duration, 0);
 
         this.prevPosition = this.position;
-        const [deltaRow, deltaCol] = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]][this.directionIndex];
+        const [deltaRow, deltaCol] = MOVE_DIRECTIONS[this.directionIndex];
         this.updateGridPosition(this.row + deltaRow, this.col + deltaCol);
     }
 
@@ -371,8 +383,8 @@ async function main() {
     /** @type {Pokemon[]} */
     const entities = [];
     for (let i = 0; i < 10; i++) {
-        const row = Math.floor(Math.random() * maxRows);
-        const col = Math.floor(Math.random() * maxCols);
+        const row = 1 + Math.floor(Math.random() * (maxRows - 2));
+        const col = 1 + Math.floor(Math.random() * (maxCols - 2));
         const animData = animDataList[Math.floor(Math.random() * animDataList.length)];
         entities.push(new Pokemon(row, col, new AnimatedSprite(animData)));
     }
@@ -429,8 +441,8 @@ async function main() {
         movePokemon(event.clientX, event.clientY);
     });
 
-    canvas.addEventListener("touchmove", () => {
-        movePokemon();
+    canvas.addEventListener("touchmove", (event) => {
+        movePokemon(event.touches[0].clientX, event.touches[0].clientY);
     });
 
     canvas.addEventListener("mouseup", () => {
