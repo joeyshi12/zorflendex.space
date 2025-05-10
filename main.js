@@ -374,7 +374,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function main() {
-    const pokemonNames = ["Gengar", "Misdreavus", "Litwick"];
+    const pokemonNames = ["Gengar", "Misdreavus", "Litwick", "Clodsire"];
     const animDataList = await Promise.all(pokemonNames.map(name => loadAnimation(name)));
 
     /** @type {Pokemon} */
