@@ -430,19 +430,32 @@ async function main() {
     }
 
     canvas.addEventListener("mousedown", (event) => {
-        pickUp(event.clientX, event.clientY);
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = event.pageX - rect.left;
+        const mouseY = event.pageY - rect.top;
+        pickUp(mouseX, mouseY);
     });
 
     canvas.addEventListener("touchstart", (event) => {
-        pickUp(event.touches[0].clientX, event.touches[0].clientY);
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = event.touches[0].clientX - rect.left;
+        const mouseY = event.touches[0].clientY - rect.top;
+        pickUp(mouseX, mouseY);
     });
 
     canvas.addEventListener("mousemove", (event) => {
-        movePokemon(event.clientX, event.clientY);
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = event.pageX - rect.left;
+        const mouseY = event.pageY - rect.top;
+        movePokemon(mouseX, mouseY);
     });
 
     canvas.addEventListener("touchmove", (event) => {
-        movePokemon(event.touches[0].clientX, event.touches[0].clientY);
+        event.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = event.touches[0].clientX - rect.left;
+        const mouseY = event.touches[0].clientY - rect.top;
+        movePokemon(mouseX, mouseY);
     });
 
     canvas.addEventListener("mouseup", () => {
