@@ -1,7 +1,8 @@
 const SCALE = 3;
 const CELL_LENGTH = 22;
 const MOVE_DIRECTIONS = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]];
-
+const MIN_DELTA_TIME = 16;
+const POKEMON_IDS = ["000", "001", "002", "003", "004", "005", "006", "007", "008", "009", "010", "011", "012", "013", "014", "016", "017", "018", "019", "020", "021", "022", "023", "024", "025", "026", "027", "028", "029", "030", "031", "032", "033", "034", "035", "036", "037", "038", "039", "040", "041", "042", "043", "044", "045", "046", "047", "048", "049", "050", "051", "052", "053", "054", "055", "056", "057", "058", "059", "060", "061", "062", "063", "064", "065", "066", "067", "068", "069", "070", "071", "072", "073", "074", "075", "076", "077", "078", "079", "080", "081", "082", "083", "084", "085", "086", "087", "088", "089", "090", "091", "092", "093", "094", "095", "096", "097", "098", "099", "100", "101", "102", "103", "104", "105", "106", "107", "108", "109", "110", "111", "112", "113", "114", "115", "116", "117", "118", "119", "120", "121", "122", "123", "124", "125", "126", "127", "128", "129", "130", "131", "132", "133", "134", "135", "136", "137", "138", "139", "140", "141", "142", "143", "144", "145", "146", "147", "149", "150", "151", "980"]
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
 let maxRows = 10;
@@ -165,7 +166,7 @@ class Pokemon {
     pickUp() {
         this.isPickedUp = true;
         this.prevPosition = undefined;
-        this.sprite.play("Cringe");
+        this.sprite.play("Hurt");
         this.sprite.setRow(0);
         this.actionTimer = 0;
         this.actionDuration = this.sprite.currentAnimation.durations.reduce((duration, acc) => acc + duration, 0);
@@ -365,6 +366,20 @@ function toCoordinate(row, col) {
     };
 }
 
+/**
+ * Returns k random elements from arr without replacement
+ * @param {any[]} arr
+ * @param {number} k
+ */
+function chooseRandom(arr, k) {
+    const shuffled = arr.slice();
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled.slice(0, k);
+}
+
 window.addEventListener("resize", () => {
     resize();
 });
@@ -374,18 +389,19 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function main() {
-    const pokemonNames = ["Gengar", "Misdreavus", "Litwick", "Clodsire"];
-    const animDataList = await Promise.all(pokemonNames.map(name => loadAnimation(name)));
+    const pokemonIds = chooseRandom(POKEMON_IDS, 8);
+    const animDataList = await Promise.all(pokemonIds.map(name => loadAnimation(name)));
+    let previousTime = 0;
 
     /** @type {Pokemon} */
     let selectedPokemon;
 
     /** @type {Pokemon[]} */
     const entities = [];
-    for (let i = 0; i < 10; i++) {
+    for (let index in pokemonIds) {
         const row = 1 + Math.floor(Math.random() * (maxRows - 2));
         const col = 1 + Math.floor(Math.random() * (maxCols - 2));
-        const animData = animDataList[Math.floor(Math.random() * animDataList.length)];
+        const animData = animDataList[index];
         entities.push(new Pokemon(row, col, new AnimatedSprite(animData)));
     }
 
@@ -474,35 +490,45 @@ async function main() {
         setDown();
     });
 
-    function update() {
-        context.save();
-        context.imageSmoothingEnabled = false;
-        context.scale(SCALE, SCALE);
+    /**
+     * Update function
+     * @param {number} time 
+     */
+    function update(time) {
+        const deltaTime = time - previousTime;
 
-        // Update
-        for (let entity of entities) {
-            entity.update();
+        if (deltaTime > MIN_DELTA_TIME) {
+            context.save();
+            context.imageSmoothingEnabled = false;
+            context.scale(SCALE, SCALE);
+
+            // Update
+            for (let entity of entities) {
+                entity.update();
+            }
+
+            // Render
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            if (selectedPokemon) {
+                const row = Math.round(selectedPokemon.position.y / CELL_LENGTH - 0.5);
+                const col = Math.round(selectedPokemon.position.x / CELL_LENGTH - 0.5);
+                context.fillStyle = "rgba(0, 255, 0, 0.4)";
+                context.fillRect(
+                    col * CELL_LENGTH,
+                    row * CELL_LENGTH,
+                    CELL_LENGTH,
+                    CELL_LENGTH
+                );
+            }
+            drawGrid();
+            for (let entity of entities) {
+                entity.render();
+            }
+
+            context.restore();
+            previousTime = time;
         }
 
-        // Render
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        if (selectedPokemon) {
-            const row = Math.round(selectedPokemon.position.y / CELL_LENGTH - 0.5);
-            const col = Math.round(selectedPokemon.position.x / CELL_LENGTH - 0.5);
-            context.fillStyle = "rgba(0, 255, 0, 0.4)";
-            context.fillRect(
-                col * CELL_LENGTH,
-                row * CELL_LENGTH,
-                CELL_LENGTH,
-                CELL_LENGTH
-            );
-        }
-        drawGrid();
-        for (let entity of entities) {
-            entity.render();
-        }
-
-        context.restore();
         requestAnimationFrame(update);
     }
 

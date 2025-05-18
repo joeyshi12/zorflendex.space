@@ -1,0 +1,36 @@
+<AnimData>
+	<ShadowSize>2</ShadowSize>
+	<Anims>
+		<Anim>
+			<Name>Walk</Name>
+			<FrameWidth>88</FrameWidth>
+			<FrameHeight>112</FrameHeight>
+			<Durations>
+				<Duration>10</Duration>
+				<Duration>14</Duration>
+				<Duration>10</Duration>
+				<Duration>14</Duration>
+			</Durations>
+		</Anim>
+		<Anim>
+			<Name>Hurt</Name>
+			<FrameWidth>80</FrameWidth>
+			<FrameHeight>88</FrameHeight>
+			<Durations>
+				<Duration>2</Duration>
+				<Duration>8</Duration>
+			</Durations>
+		</Anim>
+		<Anim>
+			<Name>Idle</Name>
+			<FrameWidth>96</FrameWidth>
+			<FrameHeight>104</FrameHeight>
+			<Durations>
+				<Duration>16</Duration>
+				<Duration>16</Duration>
+				<Duration>16</Duration>
+				<Duration>16</Duration>
+			</Durations>
+		</Anim>
+		</Anims>
+</AnimData>
